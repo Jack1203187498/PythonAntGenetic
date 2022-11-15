@@ -18,15 +18,13 @@ def functionG2D(G):
                             im = abs(i - m)
                             jn = abs(j - n)
                             if im + jn == 1 or (im == 1 and jn == 1):
-                                D[i][j][m][n] = (im + jn) ** 0.5
+                                D[i][j][m][n] = np.sqrt(im + jn)
     return D
 
 def main():
     figure1 = 1
     figure2 = 1
     figure3 = 1
-
-    everyStep = 0
 
     # G 地形图为01矩阵，1表示障碍物
     G = [[0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -96,7 +94,7 @@ def main():
             ix = i + 0.5
             iy = j + 0.5
             if ix != Ex or iy != Ey:
-                Eta[i][j] = 1.0 / ((((ix - Ex) ** 2) + ((iy - Ey) ** 2)) ** 0.5)
+                Eta[i][j] = 1.0 / np.sqrt(np.square(ix - Ex) + np.square(iy - Ey))
             else:
                 Eta[i][j] = 100
 
@@ -112,38 +110,38 @@ def main():
         print("round:" + str(k))
         for m in range(M):
             W = S
-            Path = []
-            Path.append(S)
+            Path = [S]
             PLkm = 0
             TABUkm = np.ones((MM, MM))
             TABUkm[S[0]][S[1]] = 0
             DD = copy.deepcopy(D)
             #下一步可以前往的结点
-            DW = copy.deepcopy(DD[W[0]][W[1]])
+            DW = DD[W[0]][W[1]]
             DW1 = np.nonzero(DW)
             for j in range(len(DW1[0])):
                 if TABUkm[DW1[0][j]][DW1[1][j]] == 0:
                     DW[DW1[0][j]][DW1[1][j]] = 0
             LJD = np.nonzero(DW)
             LenLJD = len(LJD[0])
-
             # 蚂蚁遇到食物或者陷入死胡同则觅食停止
             while W != E and LenLJD >= 1:
                 PP = np.zeros(LenLJD)
                 for i in range(LenLJD):
                     PP[i] = (Tau[W[0]][W[1]][LJD[0][i]][LJD[1][i]] ** Alpha) * (Eta[LJD[0][i]][LJD[1][i]] ** Beta)
-                sumpp = np.sum(PP)
+                sumpp = PP.sum()
                 PP = PP / sumpp
                 Pcum = np.zeros(LenLJD)
                 Pcum[0] = PP[0]
                 for i in range(1, LenLJD):
                     Pcum[i] = Pcum[i-1] + PP[i]
-                Select = []
+                Select = -1
+
                 p = random.random()
                 for i in range(len(Pcum)):
                     if Pcum[i] >= p:
-                        Select.append(i)
-                to_visit = [LJD[0][Select[0]], LJD[1][Select[0]]]
+                        Select = i
+                        break
+                to_visit = [LJD[0][Select], LJD[1][Select]]
 
                 Path.append(to_visit)
                 PLkm += DD[W[0]][W[1]][to_visit[0]][to_visit[1]]
@@ -154,7 +152,7 @@ def main():
                             DD[W[0]][W[1]][kk][kkk] = 0
                             DD[kk][kkk][W[0]][W[1]] = 0
                 TABUkm[W[0]][W[1]] = 0
-                DW = copy.deepcopy(DD[W[0]][W[1]])
+                DW = DD[W[0]][W[1]]
                 DW1 = np.nonzero(DW)
                 for j in range(len(DW1[0])):
                     if TABUkm[DW1[0][j]][DW1[1][j]] == 0:
@@ -168,43 +166,11 @@ def main():
                     mink = k
                     minl = m
                     minkl = PLkm
-                else:
-                    PL[k][m] = 0
-            if everyStep == 1:
-                plt.figure(figsize=(5, 5))
-                plt.grid(True)
-                x_major_locator = MultipleLocator(1)
-                y_major_locator = MultipleLocator(1)
-                ax = plt.gca()
-                ax.xaxis.set_major_locator(x_major_locator)
-                ax.yaxis.set_major_locator(y_major_locator)
-                plt.xlim(0, 20)
-                plt.ylim(0, 20)
-                for i in range(MM):
-                    for j in range(MM):
-                        x1 = i
-                        y1 = j
-                        x2 = i
-                        y2 = j + 1
-                        x3 = i + 1
-                        y3 = j + 1
-                        x4 = i + 1
-                        y4 = j
-                        if G[i][j] == 1:
-                            plt.fill([x1, x2, x3, x4], [y1, y2, y3, y4], "gray")
-                        else:
-                            plt.fill([x1, x2, x3, x4], [y1, y2, y3, y4], "white")
-                LENROUT = len(Path)
-                Rx = []
-                Ry = []
-                for ii in range(LENROUT):
-                    Rx.append(Path[ii][0] + 0.5)
-                    Ry.append(Path[ii][1] + 0.5)
-                plt.plot(Rx, Ry)
-                plt.show()
+            else:
+                PL[k][m] = 0
         Delta_Tau = np.zeros((N, N, N, N))
         for m in range(M):
-            if PL[k][m] != 0:
+            if PL[k][m]:
                 ROUT = ROUTES[k][m]
                 TS = len(ROUT) - 1
                 PL_km = PL[k][m]
@@ -213,7 +179,7 @@ def main():
                     y = ROUT[s + 1]
                     Delta_Tau[x[0]][x[1]][y[0]][y[1]] = Delta_Tau[x[0]][x[1]][y[0]][y[1]] + Q / PL_km
                     Delta_Tau[y[0]][y[1]][x[0]][x[1]] = Delta_Tau[y[0]][y[1]][x[0]][x[1]] + Q / PL_km
-        Tau = ((1.0 - Rho) * Tau + Delta_Tau)
+        Tau = (1.0 - Rho) * Tau + Delta_Tau
     if figure1 == 1:
         minPL = []
         for i in range(K):
