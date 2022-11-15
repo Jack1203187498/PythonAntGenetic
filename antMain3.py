@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 对应 main1.m
+# 对应 main01.m, 也就是没有更新荷尔蒙的情况
 # 使用mode参数决定是否将每一步显示
 #   mode 1 : 显示蚂蚁的爬行过程，运行很慢
 #   mode 2 : 显示最终蚂蚁运行结果
@@ -24,6 +24,7 @@ def functionf(x, y):
 def functionff(xx, yy):
     ff = -(xx**2+3*yy**4-0.2*math.cos(3*math.pi*xx)-0.4*math.cos(4*math.pi*yy)+0.6)
     return ff
+
 
 def main1():
     Ant = 300
@@ -58,11 +59,21 @@ def main1():
     ax = fig.add_subplot(121, projection='3d')
     ax.plot_surface(x, y, z, cmap=plt.get_cmap('rainbow'), alpha=0.3)
     ax.scatter([i[0] for i in X], [i[1] for i in X], Tau, marker="x", color="black")
-
+    Tau_Best = np.zeros(Times)
+    P = np.zeros((Times, Ant))
     for T in range(Times):
+        lamda = 1/ (T+1)
+        Tau_Best[T] = max(Tau)
+        BestIndex = np.where(Tau_Best[T])[0][0]
         for i in range(Ant):
-            temp1 = X[i][0] + (2 * random.random() - 1) * 0.05
-            temp2 = X[i][1] + (2 * random.random() - 1) * 0.05
+            P[T][i] = (Tau[BestIndex]-Tau[i])/Tau[BestIndex]
+        for i in range(Ant):
+            if P[T][i] < P0:
+                temp1 = X[i][0] + (2 * random.random() - 1) * lamda
+                temp2 = X[i][1] + (2 * random.random() - 1) * lamda
+            else:
+                temp1 = X[i][0] + (2 * random.random() - 1) * (random.random() - 0.5)
+                temp2 = X[i][1] + (2 * random.random() - 1) * (random.random() - 0.5)
             if temp1 < Lower_1:
                 temp1 = Lower_1
             if temp1 > Upper_1:
@@ -75,8 +86,8 @@ def main1():
             if functionF(temp1, temp2) > functionF(X[i][0], X[i][1]):
                 X[i][0] = temp1
                 X[i][1] = temp2
-        for i in range(Ant):
-            Tau[i] = (1 - Rou) * Tau[i] + functionF(X[i][0], X[i][1])
+        # for i in range(Ant):
+        #     Tau[i] = (1 - Rou) * Tau[i] + functionF(X[i][0], X[i][1])
         if mode == 1:
             ax2 = fig.add_subplot(122, projection='3d')
             ax2.plot_surface(x, y, z, cmap=plt.get_cmap('rainbow'), alpha=0.3)

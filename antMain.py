@@ -22,6 +22,9 @@ def functionG2D(G):
     return D
 
 def main():
+    # figure1: 绘制最优路径更新情况
+    # figure2: 绘制蚂蚁最优路径
+    # figure3: 绘制每次迭代中的蚂蚁最优路径
     figure1 = 1
     figure2 = 1
     figure3 = 1
@@ -195,11 +198,11 @@ def main():
             minPL.append(min(PLKPLK))
         plt.figure(figsize=(5, 5))
         plt.grid(True)
-        x_major_locator = MultipleLocator(1)
-        y_major_locator = MultipleLocator(1)
-        ax = plt.gca()
-        ax.xaxis.set_major_locator(x_major_locator)
-        ax.yaxis.set_major_locator(y_major_locator)
+        # x_major_locator = MultipleLocator(1)
+        # y_major_locator = MultipleLocator(1)
+        # ax = plt.gca()
+        # ax.xaxis.set_major_locator(x_major_locator)
+        # ax.yaxis.set_major_locator(y_major_locator)
         plt.plot(minPL)
     # 绘制蚂蚁爬行路径
     if figure2 == 1:

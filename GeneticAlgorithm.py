@@ -129,9 +129,10 @@ def main():
             plt.plot(xbase, ybase)
             plt.plot(x1, y1, '.')
             plt.plot(x2, bestfit, '*')
-            plt.show()
+
 
     print("The best X is --->>", str(x2))
     print("The best Y is --->>", str(bestfit))
+    plt.show()
 
 main()
